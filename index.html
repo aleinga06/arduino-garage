@@ -1,75 +1,39 @@
-!doctype html
-html lang=it
-meta charset=utf-8 
-meta name=viewport content=width=device-width, initial-scale=1 
-titleArduino LED (BLE)title
-style
-  root { font-family system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
-  body { margin0; padding24px; displayflex; flex-directioncolumn; gap16px; max-width520px; }
-  h1 { margin0 0 8px; font-size22px; }
-  #status { font-size14px; opacity.8; min-height1.2em; }
-  .row { displayflex; gap12px; }
-  button { flex1; padding14px 16px; font-size18px; border-radius12px; border1px solid #ccc; }
-  #connect { background#0a84ff; colorwhite; bordernone; }
-  #on { background#34c759; colorwhite; bordernone; }
-  #off { background#ff3b30; colorwhite; bordernone; }
-  #toggle { background#ff9f0a; colorwhite; bordernone; }
-  .disabled { opacity.5; }
-style
-h1Arduino LED (BLE)h1
-p id=statusNon connessop
-button id=connectConnettibutton
-div class=row
-  button id=on  disabledONbutton
-  button id=off disabledOFFbutton
-div
-button id=toggle disabledTogglebutton
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Arduino LED (BLE)</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    body { margin:0; padding:24px; display:flex; flex-direction:column; gap:16px; max-width:520px; }
+    h1 { margin:0 0 8px; font-size:22px; }
+    #status { font-size:14px; opacity:.8; min-height:1.2em; }
+    .row { display:flex; gap:12px; }
+    button { flex:1; padding:14px 16px; font-size:18px; border-radius:12px; border:1px solid #ccc; }
+    #connect { background:#0a84ff; color:white; border:none; }
+    #on { background:#34c759; color:white; border:none; }
+    #off { background:#ff3b30; color:white; border:none; }
+    #toggle { background:#ff9f0a; color:white; border:none; }
+  </style>
+</head>
+<body>
+  <h1>Arduino LED (BLE)</h1>
+  <p id="status">Non connesso</p>
+  <button id="connect">Connetti</button>
+  <div class="row">
+    <button id="on"  disabled>ON</button>
+    <button id="off" disabled>OFF</button>
+  </div>
+  <button id="toggle" disabled>Toggle</button>
 
-script
-const SERVICE_UUID = '19b10000-e8f2-537e-4f6c-d104768a1214';
-const CHAR_UUID    = '19b10001-e8f2-537e-4f6c-d104768a1214';
+  <script>
+    const SERVICE_UUID = '19b10000-e8f2-537e-4f6c-d104768a1214';
+    const CHAR_UUID    = '19b10001-e8f2-537e-4f6c-d104768a1214';
 
-let device, server, service, characteristic;
+    let device, server, service, characteristic;
 
-function setUI(connected) {
-  document.getElementById('on').disabled     = !connected;
-  document.getElementById('off').disabled    = !connected;
-  document.getElementById('toggle').disabled = !connected;
-  document.getElementById('status').textContent = connected  'Connesso'  'Non connesso';
-}
-
-async function connect() {
-  try {
-    document.getElementById('status').textContent = 'Ricerca dispositivo...';
-    device = await navigator.bluetooth.requestDevice({
-      filters [{ services [SERVICE_UUID] }],
-      optionalServices [SERVICE_UUID],
-    });
-    device.addEventListener('gattserverdisconnected', () = setUI(false));
-
-    document.getElementById('status').textContent = 'Connessione...';
-    server = await device.gatt.connect();
-    service = await server.getPrimaryService(SERVICE_UUID);
-    characteristic = await service.getCharacteristic(CHAR_UUID);
-    setUI(true);
-  } catch (e) {
-    document.getElementById('status').textContent = 'Errore ' + e.message;
-    console.error(e);
-  }
-}
-
-async function writeByte(b) {
-  if (!characteristic) return;
-  const data = new Uint8Array([b & 0xFF]);
-  await characteristic.writeValue(data);
-}
-
-document.getElementById('connect').addEventListener('click', connect);
-document.getElementById('on').addEventListener('click',   () = writeByte(0x01));
-document.getElementById('off').addEventListener('click',  () = writeByte(0x00));
-document.getElementById('toggle').addEventListener('click', async () = {
-   se nel tuo sketch vuoi un vero toggle, interpreta 0x02 come toggle e cambia qui a 0x02
-  await writeByte(0x01);  esempio semplice forza ON; modifica secondo il tuo sketch
-});
-script
-html
+    function setUI(connected) {
+      document.getElementById('on').disabled     = !connected;
+      document.getElementById('off').disabled    = !connected;
+      document.getElementById('toggle').disabled = !connected;
