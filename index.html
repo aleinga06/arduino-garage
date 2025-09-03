@@ -37,3 +37,39 @@
       document.getElementById('on').disabled     = !connected;
       document.getElementById('off').disabled    = !connected;
       document.getElementById('toggle').disabled = !connected;
+      document.getElementById('status').textContent = connected ? 'Connesso' : 'Non connesso';
+    }
+
+    async function connect() {
+      try {
+        document.getElementById('status').textContent = 'Ricerca dispositivo...';
+        device = await navigator.bluetooth.requestDevice({
+          filters: [{ services: [SERVICE_UUID] }],
+          optionalServices: [SERVICE_UUID],
+        });
+        device.addEventListener('gattserverdisconnected', () => setUI(false));
+
+        document.getElementById('status').textContent = 'Connessione...';
+        server = await device.gatt.connect();
+        service = await server.getPrimaryService(SERVICE_UUID);
+        characteristic = await service.getCharacteristic(CHAR_UUID);
+        setUI(true);
+      } catch (e) {
+        document.getElementById('status').textContent = 'Errore: ' + e.message;
+        console.error(e);
+      }
+    }
+
+    async function writeByte(b) {
+      if (!characteristic) return;
+      const data = new Uint8Array([b & 0xFF]);
+      await characteristic.writeValue(data);
+    }
+
+    document.getElementById('connect').addEventListener('click', connect);
+    document.getElementById('on').addEventListener('click',  () => writeByte(0x01));
+    document.getElementById('off').addEventListener('click', () => writeByte(0x00));
+    document.getElementById('toggle').addEventListener('click', () => writeByte(0x01)); // cambia se implementi un vero toggle
+  </script>
+</body>
+</html>
